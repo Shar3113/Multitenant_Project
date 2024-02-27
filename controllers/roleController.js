@@ -1,15 +1,12 @@
-/// controllers/roleController.js
 import RoleModel from "../models/role.js";
-import { Op } from "sequelize";
-// import bcrypt from "bcryptjs";
 
 export const createRole = async (req, res) => {
   const { title, property, status } = req.body;
 
   try {
     const newRole = {
-      title: title,
-      property: property,
+      title,
+      property,
       status: status || "Active", // default to 'Active' if status is not provided
     };
 
@@ -22,96 +19,132 @@ export const createRole = async (req, res) => {
   }
 };
 
-export const findAllRoles = (req, res) => {
-  const title = req.query.title;
-  const condition = title ? { title: { [Op.iLike]: `%${title}%` } } : null;
-
-  RoleModel.findAll({ where: condition })
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving roles.",
-      });
+export const findAllRoles = async (req, res) => {
+  try {
+    const roles = await RoleModel.findAll();
+    res.send(roles);
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while retrieving roles.",
     });
+  }
 };
 
-export const findOneRole = (req, res) => {
-  const id = req.params.id;
+export const findOneRole = async (req, res) => {
+  const { id } = req.params;
 
-  RoleModel.findByPk(id)
-    .then((data) => {
-      if (data) {
-        res.send(data);
-      } else {
-        res.status(404).send({
-          message: `Cannot find Role with id=${id}.`,
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error retrieving Role with id=" + id,
-      });
-    });
+  try {
+    const role = await RoleModel.findByPk(id);
+    if (role) {
+      res.send(role);
+    } else {
+      res.status(404).send({ message: `Cannot find Role with id=${id}.` });
+    }
+  } catch (error) {
+    res.status(500).send({ message: "Error retrieving Role with id=" + id });
+  }
 };
 
-export const deleteRole = (req, res) => {
-  const id = req.params.id;
+export const updateRoleById = async (req, res) => {
+  const { id } = req.params;
 
-  RoleModel.destroy({
-    where: { id: id },
-  })
-    .then((num) => {
-      if (num == 1) {
-        res.send({
-          message: "Role was deleted successfully!",
-        });
-      } else {
-        res.send({
-          message: `Cannot delete Role with id=${id}. Maybe Role was not found!`,
-        });
-      }
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Could not delete Role with id=" + id,
+  try {
+    const roleToUpdate = await RoleModel.findByPk(id);
+
+    if (!roleToUpdate) {
+      return res.status(404).send({
+        message: `Role with id=${id} not found.`,
       });
+    }
+
+    // Update only the provided fields in req.body
+    const updatedRole = await roleToUpdate.update(req.body);
+
+    res.send({
+      message: "Role was updated successfully.",
+      updatedRole,
     });
+  } catch (error) {
+    console.log("updateRoleById Error =>", error);
+    res.status(500).send({
+      message: "Error updating role with id=" + id,
+    });
+  }
 };
 
-export const deleteAllRoles = (req, res) => {
-  RoleModel.destroy({
-    where: {},
-    truncate: false,
-  })
-    .then((nums) => {
-      res.send({ message: `${nums} Roles were deleted successfully!` });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while removing all roles.",
+export const updateRole = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const roleToUpdate = await RoleModel.findByPk(id);
+
+    if (!roleToUpdate) {
+      return res.status(404).send({
+        message: `Role with id=${id} not found.`,
       });
+    }
+
+    const updatedRole = await roleToUpdate.update(req.body);
+
+    res.send({
+      message: "Role was updated successfully.",
+      updatedRole,
     });
+  } catch (error) {
+    console.log("updateRole Error =>", error);
+    res.status(500).send({
+      message: "Error updating role with id=" + id,
+    });
+  }
 };
 
-export const findAllPublishedRoles = (req, res) => {
-  RoleModel.findAll({ where: { published: true } })
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving roles.",
+export const deleteRole = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const num = await RoleModel.destroy({ where: { id } });
+    if (num == 1) {
+      res.send({ message: "Role was deleted successfully!" });
+    } else {
+      res.send({
+        message: `Cannot delete Role with id=${id}. Maybe Role was not found!`,
       });
+    }
+  } catch (error) {
+    res.status(500).send({ message: "Could not delete Role with id=" + id });
+  }
+};
+
+export const deleteAllRoles = async (req, res) => {
+  try {
+    const nums = await RoleModel.destroy({ where: {}, truncate: false });
+    res.send({ message: `${nums} Roles were deleted successfully!` });
+  } catch (error) {
+    res.status(500).send({
+      message: error.message || "Some error occurred while removing all roles.",
     });
+  }
+};
+
+export const findAllPublishedRoles = async (req, res) => {
+  try {
+    const roles = await RoleModel.findAll({ where: { published: true } });
+    res.send(roles);
+  } catch (error) {
+    res.status(500).send({
+      message:
+        error.message ||
+        "Some error occurred while retrieving published roles.",
+    });
+  }
 };
 
 export default {
   createRole,
   findAllRoles,
   findOneRole,
+  updateRoleById,
+  updateRole,
   deleteRole,
   deleteAllRoles,
   findAllPublishedRoles,

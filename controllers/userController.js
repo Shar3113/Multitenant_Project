@@ -8,7 +8,7 @@ export const createUser = async (req, res) => {
     const hashedPassword = bcrypt.hashSync(password, 10);
 
     const newUser = {
-      name,
+      name, 
       email,
       password: hashedPassword,
       tenantid,

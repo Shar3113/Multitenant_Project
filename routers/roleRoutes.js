@@ -10,15 +10,13 @@ import {
   deleteAllRoles,
   findAllPublishedRoles,
 } from "../controllers/roleController.js";
-import { createTenant } from "../controllers/tenantController.js";
 import createUser from "../controllers/userController.js";
 import { createRole as createUserRole } from '../controllers/roleController.js';
-
 
 const router = express.Router();
 
 // Route for creating a new role
-router.post("/", asyncHandler(createTenant), asyncHandler(createRole));
+router.post("/", asyncHandler(createRole));
 
 // Route for retrieving all roles
 router.get("/", asyncHandler(findAllRoles));
@@ -42,6 +40,6 @@ router.delete("/", asyncHandler(deleteAllRoles));
 router.get("/published", asyncHandler(findAllPublishedRoles));
 
 // Route for creating a new user role (assuming you want to create a role for a user)
-router.post("/createUserRole", asyncHandler(createTenant), asyncHandler(createUser), asyncHandler(createUserRole));
+router.post("/createUserRole", asyncHandler(createUser), asyncHandler(createUserRole));
 
 export default router;

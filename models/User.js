@@ -1,5 +1,6 @@
 import { DataTypes, UUIDV4, UUID } from 'sequelize';
 import sequelize from '../config/database.config.js';
+// import Role from './Role'; // Import the Role model
  
 const User = sequelize.define('User', {
   id: {
@@ -23,6 +24,24 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  mobile_number: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  // roleId: {
+  //   type: UUID,
+  //   allowNull: false,
+  //   references: { model: Role, key: 'id' } // Reference to Role model's id
+  // },
+  status: {
+    type: DataTypes.STRING,
+    defaultValue: 'active', // Default value 'active'
+  },
+  property: {
+    type: DataTypes.JSON, // Data stored as JSON object
+    allowNull: true, // Adjust allowNull as per your requirement
+  },
 });
  
 export default User;
+ 
